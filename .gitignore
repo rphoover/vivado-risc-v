@@ -10,3 +10,4 @@
 /project/project/target/
 /generators/targetutils/target/
 /bare-metal/hello-world/boot.elf
+*.orig
