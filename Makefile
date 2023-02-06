@@ -301,7 +301,7 @@ vivado-project: $(proj_time)
 # --- generate FPGA bitstream ---
 
 # Multi-threading appears broken in Vivado. It causes intermittent failures.
-MAX_THREADS ?= 1
+MAX_THREADS ?= 8
 
 $(synthesis): $(proj_time)
 	echo "set_param general.maxThreads $(MAX_THREADS)" >>$(proj_path)/make-synthesis.tcl
