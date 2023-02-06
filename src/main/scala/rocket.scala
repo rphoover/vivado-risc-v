@@ -207,6 +207,14 @@ class Rocket64b2l2 extends Config(
   new WithNBigCores(2)    ++
   new RocketBaseConfig)
 
+/* Note: adding JTAG */
+class Rocket64b2l2j extends Config(
+  new WithInclusiveCache  ++
+  new WithNBreakpoints(8) ++
+  new WithJtagDTM         ++
+  new WithNBigCores(2)    ++
+  new RocketBaseConfig)
+
 /* With Gemmini 4x4 and 2 small cores */
 /* Note: small core has no MMU and cannot boot mainstream Linux */
 class Rocket64s2gem4 extends Config(
