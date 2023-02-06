@@ -1,3 +1,6 @@
+# Set olimex_jtag to 1 for JTAG breakout for Olimex ARM-USB-TINY-H module.
+set olimex_jtag 1
+
 # If there is no project opened, create a project
 set list_projs [get_projects -quiet]
 if { $list_projs eq "" } {
@@ -49,6 +52,14 @@ set files [list \
 ]
 add_files -norecurse -fileset $constraint_fileset $files
 
+if { $olimex_jtag == 1 } {
+  # Add JTAG constraints
+  set files [list \
+   [file normalize ../../board/${vivado_board_name}/jtag.xdc] \
+  ]
+  add_files -norecurse -fileset $constraint_fileset $files
+}
+
 set block_design_tcl "riscv-[version -short].tcl"
 source ../../board/${vivado_board_name}/ethernet-${vivado_board_name}.tcl
 
@@ -77,11 +88,27 @@ set_property -name "used_in_synthesis" -value "0" -objects $file_obj
 source ../../board/${vivado_board_name}/${block_design_tcl}
 
 if { [llength [get_bd_intf_pins -quiet RocketChip/JTAG]] == 1 } {
-  create_bd_cell -type module -reference bscan2jtag JTAG
-  connect_bd_intf_net -intf_net JTAG [get_bd_intf_pins JTAG/JTAG] [get_bd_intf_pins RocketChip/JTAG]
-  create_bd_cell -type ip -vlnv xilinx.com:ip:debug_bridge:3.0 BSCAN
-  set_property -dict [list CONFIG.C_DEBUG_MODE {7} CONFIG.C_USER_SCAN_CHAIN {1} CONFIG.C_NUM_BS_MASTER {1}] [get_bd_cells BSCAN]
-  connect_bd_intf_net -intf_net BSCAN [get_bd_intf_pins BSCAN/m0_bscan] [get_bd_intf_pins JTAG/S_BSCAN]
+  if { $olimex_jtag == 1 } {
+    # Create ports
+    set jtag_tck [ create_bd_port -dir I -type clk jtag_tck ]
+    set jtag_tdi [ create_bd_port -dir I jtag_tdi ]
+    set jtag_tdo [ create_bd_port -dir O jtag_tdo ]
+    set jtag_tms [ create_bd_port -dir I jtag_tms ]
+    set jtag_trst [ create_bd_port -dir I jtag_trst ]
+
+    # Create port connections
+    connect_bd_net -net RocketChip_jtag_tdo [get_bd_ports jtag_tdo] [get_bd_pins RocketChip/jtag_tdo]
+    connect_bd_net -net jtag_tck_0_1 [get_bd_ports jtag_tck] [get_bd_pins RocketChip/jtag_tck]
+    connect_bd_net -net jtag_tdi_0_1 [get_bd_ports jtag_tdi] [get_bd_pins RocketChip/jtag_tdi]
+    connect_bd_net -net jtag_tms_0_1 [get_bd_ports jtag_tms] [get_bd_pins RocketChip/jtag_tms]
+    connect_bd_net -net jtag_trst_0_1 [get_bd_ports jtag_trst] [get_bd_pins RocketChip/jtag_trst]
+  } else {
+    create_bd_cell -type module -reference bscan2jtag JTAG
+    connect_bd_intf_net -intf_net JTAG [get_bd_intf_pins JTAG/JTAG] [get_bd_intf_pins RocketChip/JTAG]
+    create_bd_cell -type ip -vlnv xilinx.com:ip:debug_bridge:3.0 BSCAN
+    set_property -dict [list CONFIG.C_DEBUG_MODE {7} CONFIG.C_USER_SCAN_CHAIN {1} CONFIG.C_NUM_BS_MASTER {1}] [get_bd_cells BSCAN]
+    connect_bd_intf_net -intf_net BSCAN [get_bd_intf_pins BSCAN/m0_bscan] [get_bd_intf_pins JTAG/S_BSCAN]
+  }
 }
 
 set_property CONFIG.CLKOUT1_REQUESTED_OUT_FREQ $riscv_clock_frequency [get_bd_cells clk_wiz_0]
