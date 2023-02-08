@@ -398,6 +398,8 @@ public class Main {
                 s += sig.out ? "out" : "in ";
                 s += " std_logic";
             }
+	    if (s != null) ln(s + ";");
+	    s = "    jtag_trst: in std_logic";
         }
         if (bscan_bus != null) {
             if (s != null) ln(s + ";");
@@ -439,6 +441,7 @@ public class Main {
             ln("    ATTRIBUTE X_INTERFACE_INFO of jtag_tdi : SIGNAL is \"xilinx.com:interface:jtag:1.0 JTAG TD_I\";");
             ln("    ATTRIBUTE X_INTERFACE_INFO of jtag_tdo : SIGNAL is \"xilinx.com:interface:jtag:1.0 JTAG TD_O\";");
             ln("    ATTRIBUTE X_INTERFACE_INFO of jtag_tdt : SIGNAL is \"xilinx.com:interface:jtag:1.0 JTAG TD_T\";");
+	    ln("    ATTRIBUTE X_INTERFACE_PARAMETER of jtag_trst: SIGNAL is \"POLARITY ACTIVE_HIGH\";");
         }
         if (bscan_bus != null) {
             ln("");
@@ -636,7 +639,7 @@ public class Main {
             else if (nm.equals("debug_clock")) dst = "clock";
             else if (nm.equals("debug_clockeddmi_dmiClock")) dst = "clock";
             else if (nm.equals("debug_clockeddmi_dmiReset")) dst = "reset";
-            else if (nm.equals("debug_systemjtag_reset")) dst = "'0'";
+            else if (nm.equals("debug_systemjtag_reset")) dst = "jtag_trst";
             else if (nm.equals("debug_systemjtag_mfr_id")) dst = "\"10010001001\"";
             else if (nm.equals("debug_systemjtag_part_number")) dst = "\"0000000000000000\"";
             else if (nm.equals("debug_systemjtag_version")) dst = "\"0000\"";
